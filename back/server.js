@@ -1,11 +1,11 @@
-const express = require('express')
+import express from 'express'
 const app = express()
 const port = process.env.PORT || 3000
-const cors = require('cors')
-const es = require('event-stream')
-const fs = require('fs')
+import cors from 'cors'
+import es from 'event-stream'
+import fs from 'fs'
 
-const baseFolder = "f:/study/2025/09/log/data"
+const baseFolder = process.env.BASE_FOLDER || "../data"
 
 var myLogger = function (req, res, next) {
     const { url, path: routePath } = req
@@ -210,7 +210,7 @@ function msgBy5MinAndCateg() {
     return ret
 }
 
-function getOrders() {
+export function getOrders() {
     var ret = []
     ttimsgs.forEach(m => {
         if (m.flow.startsWith('F2B'))
