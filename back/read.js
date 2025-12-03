@@ -191,6 +191,7 @@ export async function ttiStats(date) {
   return ret2
 }
 
+
 export async function opStatsForDay(day) {
   const promises = []
   var files = fs.readdirSync(`${logsPath}/${day}/output_processed`)
