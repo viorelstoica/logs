@@ -4,19 +4,36 @@ import * as xml2json from 'xml2json'
 
 const logsPath = '../data'
 
+// common shit
 /**
- * Represents a book.
+ * reads a file .
  * @constructor
  * @param {string} title - The title of the book.
  * @param {string} author - The author of the book.
  */
-export function getFile(file) {
+export function getXmlFile(file) {
   return new Promise((resolve) => {
-    fs.readFile('../data/tti/batch/20251022_161103_070_45_msgin_BatchCsdThirdPartyInsider_00c9a029-19d9-40f0-9a75-dce4c905c8e0.xml', 'utf8', function (err, data) {
+    fs.readFile(`${file}`, 'utf8', function (err, data) {
       var json = xml2json.toJson(data, { "object": true });
       resolve(json)
     })
   })
+}
+
+// gwpack stuff
+
+/**
+ * get the list of uuid from the xml folder for a given day
+ * @param {string} day - The author of the book.
+ */
+export async function getXmlUuid(day) {
+  const ret = []
+  var files = fs.readdirSync(`../data/${day}/output_processed`)
+  files.forEach(async fi => {
+    let json = await getXmlFile(`../data/${day}/output_processed/${fi}`)
+    Object.keys(json).forEach((k, v) => { ret.push(data[k]['output'])})
+  })
+  return ret
 }
 
 export async function outputProcessedStats(day) {
@@ -164,40 +181,12 @@ export async function o() {
 }
 
 
-// TTI stuff
-
-
-export async function ttiStats(date) {
-  var ret = []
-  var folders = fs.readdirSync(`../data/logs/${date}/trace`)
-  folders.forEach(async (fo) => {
-    var files = fs.readdirSync(`../data/logs/${date}/trace/${fo}`)
-    files.forEach(fi => {
-      const tokens = fi.split('_')
-      ret.push({date: tokens[0], time: tokens[1], millis: tokens[2], thread: tokens[3], type: tokens[4], flow: tokens[5], uuid: tokens[6]})
-    })
-  })
-  var ret2 = []
-  ret.forEach(r=>{
-     var elm = ret2.find(v => v.type === r.type)
-      if (elm != undefined) {
-        elm.count = elm.count + 1
-      }
-      else {
-        ret2.push({type: r.type, count: 1})
-      }
-
-  })
-  return ret2
-}
-
-
 export async function opStatsForDay(day) {
   const promises = []
   var files = fs.readdirSync(`${logsPath}/${day}/output_processed`)
-    files.forEach(fi => {
-      promises.push(scanSucErr2(`${logsPath}/${day}/output_processed/${fi}`))
-    })
+  files.forEach(fi => {
+    promises.push(scanSucErr2(`${logsPath}/${day}/output_processed/${fi}`))
+  })
   const ret = await Promise.all(promises)
   return ret
 }
@@ -221,6 +210,58 @@ function scanSucErr2(fi) {
       resolve({ file: fi, cnt: cnt, suc: suc, err: err })
     });
   })
+}
+
+
+
+
+// TTI stuff
+
+function scanTraceFolder(date) {
+  var ret = []
+  var folders = fs.readdirSync(`${logsPath}/${date}/trace`)
+  folders.forEach(async (fo) => {
+    var files = fs.readdirSync(`${logsPath}/${date}/trace/${fo}`)
+    files.forEach(fi => {
+      const tokens = fi.split('_')
+      ret.push({ date: tokens[0], time: tokens[1], millis: tokens[2], thread: tokens[3], type: tokens[4], flow: tokens[5], uuid: tokens[6] })
+    })
+  })
+  return ret
+}
+
+//msgin,out,etc
+export async function ttiStats(date) {
+  const ret = scanTraceFolder(date)
+  var ret2 = []
+  ret.forEach(r => {
+    var elm = ret2.find(v => v.type === r.type)
+    if (elm != undefined) {
+      elm.count = elm.count + 1
+    }
+    else {
+      ret2.push({ type: r.type, count: 1 })
+    }
+
+  })
+  return ret2
+}
+
+//msgin by flow
+export async function ttiStatsByFlow(date) {
+  const ret = scanTraceFolder(date)
+  var ret2 = []
+  ret.forEach(r => {
+    var elm = ret2.find(v => v.flow === r.flow)
+    if (elm != undefined) {
+      elm.count = elm.count + 1
+    }
+    else {
+      ret2.push({ flow: r.flow, count: 1 })
+    }
+
+  })
+  return ret2
 }
 
 
