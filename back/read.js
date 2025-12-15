@@ -27,13 +27,54 @@ export function getXmlFile(file) {
  * @param {string} day - The author of the book.
  */
 export async function getXmlUuid(day) {
-  const ret = []
-  var files = fs.readdirSync(`../data/${day}/output_processed`)
-  files.forEach(async fi => {
-    let json = await getXmlFile(`../data/${day}/output_processed/${fi}`)
-    Object.keys(json).forEach((k, v) => { ret.push(data[k]['output'])})
+  var promises = []
+  var files
+  try {
+    var files = fs.readdirSync(`../data/${day}/xml`)
+  } catch (err) {
+    return []
+  }
+  files.forEach(fi => {
+    promises.push(getOutputAttribute(`../data/${day}/xml/${fi}`))
   })
-  return ret
+  const ret = await Promise.all(promises)
+  var ret2 = []
+  ret.forEach(r => ret2.push(r[0]))
+  var odf = fs.readdirSync(`../data/${day}/output_processed`)
+  //  console.dir(odf, {'maxArrayLength': null})
+  ret2.forEach(r => {
+    var elm = odf.find(v => v.includes(r.output))
+    if (elm != undefined) {
+      r.processed = elm
+    }
+    else {
+      r.processed = 'n/a'
+    }
+  })
+
+  ret2.forEach(r => {
+    const tin = r.file.split("_")[1]
+    const tout = r.processed.split("_")[1]
+    r.tout = tout
+    r.tin = tin
+    r.diff = tout - tin
+  })
+
+  return ret2
+}
+
+function getOutputAttribute(file) {
+  return new Promise((resolve) => {
+    var ret = []
+    fs.readFile(file, 'utf8', function (err, data) {
+      var json = xml2json.toJson(data, { "object": true });
+      Object.keys(json).forEach((k, v) => {
+        const tk = file.split("/")
+        ret.push({ output: json[k].output, file: tk[tk.length - 1] })
+      })
+      resolve(ret)
+    })
+  })
 }
 
 export async function outputProcessedStats(day) {

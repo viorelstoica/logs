@@ -84,5 +84,14 @@ export default class ServiceApi {
       return console.error('Error fetching dates:', error);
     }
   }
-  
+
+ async getGwpackTimeSpent(date) {
+    console.log(`Calling getGwpackTimeSpent with parameter: ${date}`)
+    try {
+      const response = await fetch(`${this.url}/xmluuid/${date}`);
+      return await response.json();
+    } catch (error) {
+      return console.error('Error fetching dates:', error);
+    }
+  }
 }

@@ -37,7 +37,7 @@ async function test5(day) {
 //test5(process.argv[2])
 
 async function test6() {
-    var data = await getXmlUuid('2025-11-25')
-    console.log(data)
+    var ret = await getXmlUuid('2025-11-25')
+    console.dir(ret, {'maxArrayLength': null})
 }
 test6()

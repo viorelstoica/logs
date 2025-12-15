@@ -7,7 +7,7 @@ import Form from 'react-bootstrap/Form';
 import { useState, useEffect, useContext } from 'react';
 import './App.css'
 
-function TheMenu() {
+function TheMenu({onDate}) {
 
   const [dates, setDates] = useState([])
   const [cnt, setCnt] = useState(0)
@@ -21,6 +21,7 @@ function TheMenu() {
   useEffect(() => {
     serviceApi.getDates().then(data => {
       setDates(data)
+      onDate(data[0])
     });
   }, []);
 
@@ -34,8 +35,7 @@ function TheMenu() {
     <AppProvider>
 
       <Navbar expand="lg" className="navbar-expand-sm navbar-dark bg-secondary">
-        <Form.Select className='my-form-select' onChange={(ev) => loadFolderIndex(ev.target.value)}>
-          <option>File...</option>
+        <Form.Select className='my-form-select' onChange={(ev) => { console.log(ev.target.value) ; onDate(ev.target.value) }}>
           {dates.map(date => (
             <option key={date} value={date}>{date}</option>
           ))}
@@ -46,6 +46,9 @@ function TheMenu() {
             <NavDropdown.Item href="/ttipermin">ttipermin</NavDropdown.Item>
             <NavDropdown.Item href="/ttipermincateg">ttipermincateg</NavDropdown.Item>
             <NavDropdown.Item eventKey="4.3">delay</NavDropdown.Item>
+          </NavDropdown>
+          <NavDropdown title="GWPACK" id="nav-dropdown">
+            <NavDropdown.Item href="/gwptimespent">Time spent</NavDropdown.Item>
           </NavDropdown>
           <Nav.Link href="/tti">Tti</Nav.Link>
           <Nav.Link href="/test">Test</Nav.Link>

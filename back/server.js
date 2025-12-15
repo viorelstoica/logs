@@ -5,6 +5,9 @@ import cors from 'cors'
 import es from 'event-stream'
 import fs from 'fs'
 
+import { getXmlUuid } from './read.js'
+import { log } from 'console'
+
 const baseFolder = process.env.BASE_FOLDER || "../data"
 
 var myLogger = function (req, res, next) {
@@ -28,7 +31,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/dates', (req, res) => {
-    const dates = fs.readdirSync(`${baseFolder}/`).filter(file => fs.statSync(`${baseFolder}/${file}`).isDirectory);
+    const dates = fs.readdirSync(`${baseFolder}/`).filter(file => fs.statSync(`${baseFolder}/${file}`).isDirectory).sort((a,b) => -a.localeCompare(b)).filter(v => v.startsWith("20"))
     res.send(dates)
 })
 
@@ -104,13 +107,12 @@ app.get('/tti/xsltstats', (req, res) => {
     */
 })
 
-
-
-
+app.get('/xmluuid/:date', async (req, res) => {
+    res.status(200).json(await gwpTimeSpent(req.params.date));
+})
 
 var lines = []
 var ttimsgs = []
-
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
@@ -217,5 +219,28 @@ export function getOrders() {
             ret.push(m)
     })
     return ret
+}
+
+async function gwpTimeSpent(date) {
+    var ret = await getXmlUuid(date)
+    var ret2 = {}
+    for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += 5) {
+            const min = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
+            ret2[min] = { avg: 0, sum: 0, cnt: 0 }
+        }
+    }
+    ret.forEach((r) => {
+        if(r.diff != null && r.diff > 0) {
+            var x = Math.floor(r.tin/100)
+            var y = Math.floor(x/10)*10
+            var d = ((x-y) >= 5 ? y + 5 : y).toString().padStart(4, '0')
+            var min = d.substring(0, 2) + ":" + d.substring(2,4)
+            ret2[min].cnt = ret2[min].cnt + 1
+            ret2[min].sum = ret2[min].sum + r.diff
+            ret2[min].avg = Math.floor(ret2[min].sum/ret2[min].cnt)
+        }
+    })
+    return ret2
 }
 

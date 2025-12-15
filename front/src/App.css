@@ -20,6 +20,11 @@ body { margin: 0 ; padding: 0; height: 100%;}
   height: 500px;
 }
 
+#GwpackTimeSpentDiv {
+  width: 100%;
+  height: 500px;
+}
+
 #Days1Div {
   width: 100%;
   height: 500px;
