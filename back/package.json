@@ -14,6 +14,7 @@
     "event-stream": "^4.0.1",
     "express": "^5.1.0",
     "jsdoc": "^4.0.5",
-    "xml2json": "^0.12.0"
+    "xml2json": "^0.12.0",
+    "xslt-processor": "^3.4.0"
   }
 }
