@@ -25,7 +25,7 @@ const xslt = new Xslt(options);
 const xmlParser = new XmlParser();
 // Either
 
-const pXml = xmlParser.xmlParse(xmlString)
+var pXml = xmlParser.xmlParse(xmlString)
 const pXsl = xmlParser.xmlParse(xslString)
 
 //console.log(inspect(pXml))
@@ -48,4 +48,7 @@ xslt.xsltProcess(
 
 
 const output = execSync(`xsltproc ${xslFile} ${xmlFile}`, { encoding: 'utf-8',  maxBuffer: 10485770 })
-console.log(Object.keys(output))
+console.log(output)
+pXml = xmlParser.xmlParse(xmlString)
+console.log(pXml)
+
